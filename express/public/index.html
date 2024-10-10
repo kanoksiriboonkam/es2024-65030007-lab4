@@ -4,58 +4,104 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ESP32 Sensor Data</title>
+    <!-- เชื่อมต่อกับ Google Fonts สำหรับฟอนต์ที่สวยงาม -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- เชื่อมต่อกับ Font Awesome สำหรับไอคอน -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
-            padding: 20px;
-            background-color: #e0f7fa;
-            color: #333;
+            padding: 0;
+            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
         }
         h1 {
-            color: #00796b;
-            text-align: center;
-            margin-bottom: 20px;
+            color: #333333;
+            margin-bottom: 30px;
+            font-size: 2em;
         }
         #sensorData {
-            max-width: 600px;
-            margin: 0 auto;
             padding: 20px;
-            background-color: #ffffff;
-            border: 1px solid #ccc;
+            background-color: #f9f9f9;
             border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease-in-out;
         }
         #sensorData h2 {
             color: #00796b;
+            margin-bottom: 20px;
+            font-size: 1.5em;
         }
         .sensor-value {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 15px 0;
             font-size: 1.2em;
-            margin: 10px 0;
-            color: #00796b;
+            color: #555555;
         }
-        .icon {
-            font-size: 1.5em;
+        .sensor-value i {
             margin-right: 10px;
-            color: #ff5722;
+            color: #00796b;
+            transition: transform 0.3s ease;
+        }
+        .sensor-value:hover i {
+            transform: scale(1.2);
         }
         .error {
-            color: red;
+            color: #d32f2f;
             font-weight: bold;
+            margin-top: 20px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* เพิ่มการตอบสนองสำหรับหน้าจอขนาดเล็ก */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.5em;
+            }
+            .sensor-value {
+                font-size: 1em;
+            }
         }
     </style>
 </head>
 <body>
-    <h1>ESP32 Sensor Data</h1>
-    <div id="sensorData">Loading sensor data...</div>
+    <div class="container">
+        <h1><i class="fas fa-microchip"></i> ESP32 Sensor Data</h1>
+        <div id="sensorData">Loading sensor data...</div>
+    </div>
 
     <script>
         const sensorDataDiv = document.getElementById('sensorData');
 
         // Function to fetch sensor data from the server
         function fetchSensorData() {
-            fetch('http://192.168.1.228:3300/sensor-data')
+            fetch('http://192.168.1.119:3300/sensor-data', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer z9LRcZFD09RzMdFJg0OwInK9iMhldA90Tz9h9XXc2rsTrPGmRhMRP06sq4JNXhiLUkrXyS63Nx'
+                }
+            })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok: ' + response.statusText);
@@ -73,16 +119,38 @@
 
         // Function to display sensor data
         function displaySensorData(data) {
-            sensorDataDiv.innerHTML = `
-                <h2>Current Sensor Data</h2>
-                <p class="sensor-value"><span class="icon">🌡️</span><strong>Temperature:</strong> ${data.temperature} °C</p>
-                <p class="sensor-value"><span class="icon">💧</span><strong>Humidity:</strong> ${data.humidity} %</p>
-                <p class="sensor-value"><span class="icon">🔘</span><strong>Switch Status:</strong> ${data.switchStatus ? 'ON' : 'OFF'}</p>
-            `;
+            if (data) {
+                sensorDataDiv.innerHTML = `
+                    <h2><i class="fas fa-database"></i> Current Sensor Data</h2>
+                    <div class="sensor-value">
+                        <i class="fas fa-thermometer-half"></i>
+                        <strong>Temperature:</strong> ${data.temperature} °C
+                    </div>
+                    <div class="sensor-value">
+                        <i class="fas fa-tint"></i>
+                        <strong>Humidity:</strong> ${data.humidity} %
+                    </div>
+                    <div class="sensor-value">
+                        <i class="fas fa-volume-up"></i>
+                        <strong>Sound Level:</strong> ${data.soundLevel} dB
+                    </div>
+                    <div class="sensor-value">
+                        <i class="fas fa-toggle-on"></i>
+                        <strong>Switch Status:</strong> ${data.switchStatus ? 'ON' : 'OFF'}
+                    </div>
+                    <div class="sensor-value">
+                        <i class="fas fa-clock"></i>
+                        <strong>Last Updated:</strong> ${new Date().toLocaleTimeString()}
+                    </div>
+                `;
+            } else {
+                sensorDataDiv.innerHTML = '<p class="error">No data available</p>';
+            }
         }
 
-        // Fetch sensor data every second
-        setInterval(fetchSensorData, 1000);
+        // Fetch sensor data immediately and set up an interval to fetch it every 5 seconds
+        fetchSensorData();  // Fetch data immediately when the page loads
+        setInterval(fetchSensorData, 5000);  // Continue fetching data every 5 seconds
     </script>
 </body>
 </html>
