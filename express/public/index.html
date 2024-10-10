@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Sensor Data</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #e0f7fa;
+            color: #333;
+        }
+        h1 {
+            color: #00796b;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #sensorData {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        #sensorData h2 {
+            color: #00796b;
+        }
+        .sensor-value {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #00796b;
+        }
+        .icon {
+            font-size: 1.5em;
+            margin-right: 10px;
+            color: #ff5722;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>ESP32 Sensor Data</h1>
+    <div id="sensorData">Loading sensor data...</div>
+
+    <script>
+        const sensorDataDiv = document.getElementById('sensorData');
+
+        // Function to fetch sensor data from the server
+        function fetchSensorData() {
+            fetch('http://192.168.1.228:3300/sensor-data')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displaySensorData(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                sensorDataDiv.innerHTML = '<p class="error">Error fetching sensor data</p>';
+            });
+        }
+
+        // Function to display sensor data
+        function displaySensorData(data) {
+            sensorDataDiv.innerHTML = `
+                <h2>Current Sensor Data</h2>
+                <p class="sensor-value"><span class="icon">🌡️</span><strong>Temperature:</strong> ${data.temperature} °C</p>
+                <p class="sensor-value"><span class="icon">💧</span><strong>Humidity:</strong> ${data.humidity} %</p>
+                <p class="sensor-value"><span class="icon">🔘</span><strong>Switch Status:</strong> ${data.switchStatus ? 'ON' : 'OFF'}</p>
+            `;
+        }
+
+        // Fetch sensor data every second
+        setInterval(fetchSensorData, 1000);
+    </script>
+</body>
+</html>
